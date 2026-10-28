@@ -49,7 +49,7 @@ params:
     main: /images/site/main-logo.png
     inverted: /images/site/inverted-logo.png
     favicon: /images/site/favicon.png
-  gitRepo: https://github.com/TU_USUARIO/blog
+  gitRepo: https://github.com/jfigueroaroldan0/blog
   gitBranch: main
   topNavbar:
     maxVisibleSections: 5

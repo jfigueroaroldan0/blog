@@ -1,7 +1,7 @@
 # Panel de administración (Sveltia CMS) → https://jfigueroaroldan.org/admin/
 backend:
   name: github
-  repo: TU_USUARIO/blog
+  repo: jfigueroaroldan0/blog
   branch: main
   commit_messages:
     create: "Nueva {{collection}}: {{slug}}"
