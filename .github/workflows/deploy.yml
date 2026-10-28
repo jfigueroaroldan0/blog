@@ -42,11 +42,19 @@ jobs:
         run: hugo --gc --minify
 
       - name: Configurar SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
           install -m 700 -d ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
+          # printf + tr: conserva el salto de línea final y quita los \r (saltos de línea de Windows)
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          # Falla aquí con un mensaje claro si el secreto no es una clave privada válida
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null \
+            || { echo "::error::SSH_KEY no es una clave privada válida (¿falta BEGIN/END o pegaste la .pub?)"; exit 1; }
+          echo "Clave cargada: $(ssh-keygen -lf ~/.ssh/id_ed25519)"
 
       - name: Subir al VPS
         run: |
