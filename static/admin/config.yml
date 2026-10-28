@@ -1,0 +1,173 @@
+# Panel de administración (Sveltia CMS) → https://jfigueroaroldan.org/admin/
+backend:
+  name: github
+  repo: TU_USUARIO/blog
+  branch: main
+  commit_messages:
+    create: "Nueva {{collection}}: {{slug}}"
+    update: "Editar {{collection}}: {{slug}}"
+    delete: "Borrar {{collection}}: {{slug}}"
+    uploadMedia: "Subir {{path}}"
+    deleteMedia: "Borrar {{path}}"
+
+site_url: https://jfigueroaroldan.org
+display_url: https://jfigueroaroldan.org
+
+# Imágenes "sueltas" (las de cada práctica se guardan junto a ella)
+media_folder: static/uploads
+public_folder: /uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ───────────── PRÁCTICAS ─────────────
+  - name: practicas
+    label: Prácticas
+    label_singular: Práctica
+    description: Prácticas del ciclo, organizadas por módulo.
+    folder: content/posts/practicas
+    # Se guarda en content/posts/practicas/<modulo>/<titulo>/index.md
+    path: "{{menu.sidebar.parent}}/{{slug}}/index"
+    media_folder: ""
+    public_folder: ""
+    create: true
+    delete: true
+    sortable_fields: [date, title]
+    summary: "{{title}} · {{menu.sidebar.parent | upper}} · {{date | date('DD/MM/YYYY')}}"
+    fields:
+      - { name: title, label: Título }
+      - { name: date, label: Fecha, widget: datetime }
+      - { name: description, label: Resumen, hint: "Se muestra en la tarjeta de la práctica." }
+      - name: menu
+        label: Menú lateral
+        widget: object
+        collapsed: true
+        fields:
+          - name: sidebar
+            label: Barra lateral
+            widget: object
+            fields:
+              - name: parent
+                label: Módulo
+                widget: select
+                options:
+                  - { label: "Servicios de Red e Internet (SRI)", value: sri }
+                  - { label: "Administración de Sistemas Operativos (ASO)", value: aso }
+                  - { label: "Implantación de Sistemas Operativos (ISO)", value: iso }
+                  - { label: "Planificación y Administración de Redes (PAR)", value: par }
+                  - { label: "Bases de Datos (GBD/ASGBD)", value: gbd }
+                  - { label: "Seguridad y Alta Disponibilidad (SAD)", value: sad }
+                  - { label: "Implantación de Aplicaciones Web (IAW)", value: iaw }
+                  - { label: "Fundamentos de Hardware (FHW)", value: fhw }
+              - { name: name, label: Nombre corto en el menú }
+              - { name: identifier, label: Identificador, widget: compute, value: "p-{{uuid_short}}" }
+              - { name: weight, label: Orden, widget: number, value_type: int, default: 10 }
+      - { name: hero, label: Imagen de portada, widget: image, required: false }
+      - { name: tags, label: Etiquetas, widget: list, required: false, hint: "Ej.: DNS, Debian, Docker" }
+      - { name: categories, label: Categorías, widget: hidden, default: ["Prácticas"] }
+      - { name: draft, label: Borrador, widget: boolean, default: false, hint: "Si está activado, no se publica." }
+      - name: body
+        label: Contenido
+        widget: markdown
+        default: |
+          ## 🎯 Objetivo
+
+          Qué se pide en la práctica.
+
+          ## 🧰 Entorno
+
+          | Máquina | Sistema | IP |
+          |---------|---------|----|
+          | servidor | Debian 13 | 192.168.1.10 |
+
+          ## 🛠️ Desarrollo
+
+          ### Paso 1
+
+          ```bash
+          sudo apt update
+          ```
+
+          ## ✅ Comprobación
+
+          ## ⚠️ Problemas encontrados
+
+          ## 📝 Conclusión
+
+  # ───────────── ARTÍCULOS / POSTS ─────────────
+  - name: articulos
+    label: Artículos
+    label_singular: Artículo
+    description: Posts, explicaciones y tutoriales.
+    folder: content/posts/articulos
+    path: "{{slug}}/index"
+    media_folder: ""
+    public_folder: ""
+    create: true
+    delete: true
+    sortable_fields: [date, title]
+    summary: "{{title}} · {{date | date('DD/MM/YYYY')}}"
+    fields:
+      - { name: title, label: Título }
+      - { name: date, label: Fecha, widget: datetime }
+      - { name: description, label: Resumen }
+      - name: menu
+        label: Menú lateral
+        widget: object
+        collapsed: true
+        fields:
+          - name: sidebar
+            label: Barra lateral
+            widget: object
+            fields:
+              - { name: parent, label: Sección, widget: hidden, default: articulos }
+              - { name: name, label: Nombre corto en el menú }
+              - { name: identifier, label: Identificador, widget: compute, value: "a-{{uuid_short}}" }
+              - { name: weight, label: Orden, widget: number, value_type: int, default: 10 }
+      - { name: hero, label: Imagen de portada, widget: image, required: false }
+      - { name: tags, label: Etiquetas, widget: list, required: false }
+      - name: categories
+        label: Categoría
+        widget: select
+        multiple: true
+        options: [Tutoriales, Explicaciones, Opinión, Noticias]
+      - { name: draft, label: Borrador, widget: boolean, default: false }
+      - { name: body, label: Contenido, widget: markdown }
+
+  # ───────────── PERFIL / PORTFOLIO ─────────────
+  - name: perfil
+    label: Perfil y portfolio
+    files:
+      - name: author
+        label: Datos personales
+        file: data/es/author.yaml
+        fields:
+          - { name: name, label: Nombre }
+          - { name: nickname, label: Apodo }
+          - { name: greeting, label: Saludo }
+          - { name: image, label: Foto (ruta en assets), hint: "images/author/foto.png" }
+          - name: contactInfo
+            label: Contacto
+            widget: object
+            fields:
+              - { name: email, label: Email }
+              - { name: github, label: Usuario de GitHub }
+              - { name: linkedin, label: Usuario de LinkedIn, required: false }
+          - { name: summary, label: Frases animadas de la portada, widget: list }
+      - name: about
+        label: Sobre mí
+        file: data/es/sections/about.yaml
+        fields:
+          - { name: section, label: Sección, widget: hidden }
+          - { name: designation, label: Puesto / estudios }
+          - name: company
+            label: Centro / empresa
+            widget: object
+            fields:
+              - { name: name, label: Nombre }
+              - { name: url, label: Web }
+          - { name: summary, label: Texto, widget: markdown }
+          - { name: socialLinks, label: Redes sociales, widget: hidden }
+          - { name: badges, label: Habilidades, widget: hidden }

@@ -1,0 +1,55 @@
+name: Desplegar web
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # botón "Run workflow" manual
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Instalar Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Instalar Hugo extended
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.166.0'
+          extended: true
+
+      - name: Dependencias del tema
+        run: |
+          hugo mod tidy
+          hugo mod npm pack
+          npm install --no-fund --no-audit
+
+      - name: Compilar
+        run: hugo --gc --minify
+
+      - name: Configurar SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Subir al VPS
+        run: |
+          rsync -rlz --delete --chmod=D755,F644 \
+            -e "ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/id_ed25519" \
+            public/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/"
