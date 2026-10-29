@@ -58,6 +58,8 @@ jobs:
 
       - name: Subir al VPS
         run: |
-          rsync -rlz --delete --chmod=D755,F644 \
+          # --delay-updates + --delete-after: sube todo a un temporal y lo cambia de golpe al final
+          # (la web nunca queda a medias durante el despliegue)
+          rsync -rlz --delete-after --delay-updates --chmod=D755,F644 \
             -e "ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/id_ed25519" \
             public/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/"
